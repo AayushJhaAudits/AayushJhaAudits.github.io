@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Journey | Aayush</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  />
+  <style>
+    .timeline {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+      position: relative;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 20px;
+      width: 4px;
+      background: rgba(0, 240, 255, 0.4);
+      top: 0;
+      bottom: 0;
+    }
+
+    .timeline-item {
+      position: relative;
+      padding-left: 60px;
+      margin-bottom: 2.5rem;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      left: 10px;
+      top: 0;
+      background: linear-gradient(45deg, #00f0ff, #7b2dff);
+      border-radius: 50%;
+    }
+
+    .timeline-item h3 {
+      font-size: 1.3rem;
+      color: #00f0ff;
+      margin-bottom: 0.5rem;
+    }
+
+    .timeline-item p {
+      opacity: 0.8;
+      line-height: 1.6;
+    }
+
+    .header-title {
+      text-align: center;
+      font-size: 2rem;
+      background: linear-gradient(90deg, #00f0ff, #7b2dff);
+      -webkit-background-clip: text;
+      color: transparent;
+      margin: 2rem 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1 class="header-title">My Web3 Journey 🚀</h1>
+    </header>
+
+    <div class="timeline">
+      <div class="timeline-item">
+        <h3>March 2025 - Getting Started</h3>
+        <p>I began learning about blockchain and Web3. Introduced to concepts like Ethereum, smart contracts, and Solidity.</p>
+      </div>
+
+      <div class="timeline-item">
+        <h3>March 2025 - Solidity & Testing</h3>
+        <p>Completed Solidity basics and started working with Foundry for contract testing. Created my first secure smart contracts.</p>
+      </div>
+
+      <div class="timeline-item">
+        <h3>April 2025 - Vulnerability Hunting</h3>
+        <p>Dived into real-world bug bounty reports and practiced identifying reentrancy, tx.origin flaws, and gas optimizations. Built PoCs and started writing audit reports.</p>
+      </div>
+
+      <div class="timeline-item">
+        <h3>April 2025 - Publishing Audits</h3>
+        <p>Published multiple audit reports on GitHub and X. Began building a solid reputation by demonstrating clear exploit analysis and defense mechanisms.</p>
+      </div>
+
+      <div class="timeline-item">
+        <h3>Coming Soon 🚧</h3>
+        <p>Expanding into advanced security research, on-chain analysis, and full protocol audits. My journey is just beginning…</p>
+      </div>
+    </div>
+
+    <footer style="text-align: center; margin-top: 4rem; opacity: 0.6;">
+      &copy; 2025 Aayush | Smart Contract Auditor
+    </footer>
+  </div>
+</body>
+</html>

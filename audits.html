@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>My Audits | Aayush</title>
+    <link rel="stylesheet" href="css/style.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>My Audit Reports</h1>
+            <p class="tagline">Audits I've conducted to help make Web3 safer. Each report includes vulnerability breakdowns, PoCs, and practical fixes.</p>
+        </header>
+
+        <section class="audits-list">
+            <div class="audit-card">
+                <h3>🛡️ Charity Vault</h3>
+                <p>
+                    Identified and documented a <strong>reentrancy vulnerability</strong> that could have allowed attackers to drain contract funds. Included a full PoC and remediation strategy to secure the protocol.
+                </p>
+                <a href="https://github.com/AayushJhaAudits/CharityVault-Audit-Aayush" target="_blank" class="btn btn-primary">
+                    🔍 View Full Audit
+                </a>
+            </div>
+
+            <div class="audit-card">
+                <h3>🛡️ Token Vault</h3>
+                <p>
+                    Discovered <strong>access control weaknesses</strong> and <strong>logical errors</strong> in the withdrawal mechanism. Provided gas optimizations and function restructuring to improve efficiency.
+                </p>
+                <a href="https://github.com/AayushJhaAudits/Token-Vault-Audit-Report" target="_blank" class="btn btn-primary">
+                    🔍 View Full Audit
+                </a>
+            </div>
+
+            <div class="audit-card">
+                <h3>🛡️ Coming Soon</h3>
+                <p>
+                    More audits will be added as I continue my journey in Web3 security. Stay tuned for reports on smart contract exploits, optimizations, and bug bounty submissions.
+                </p>
+                <a href="#" class="btn btn-secondary" disabled>⏳ In Progress</a>
+            </div>
+        </section>
+
+        <footer>
+            &copy; 2025 Aayush | Smart Contract Auditor
+        </footer>
+    </div>
+</body>
+</html>
