@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Solmate ERC20 Fix | Blog | Aayush</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="container">
+    <article>
+      <h1>🛠 Fixing Missing Revert Checks in Solmate’s ERC20 Transfer Function</h1>
+
+      <p>
+        While studying and auditing Solmate’s ERC20 implementation, I identified that the
+        <code>transfer()</code> function lacked two important safety checks:
+      </p>
+      <ul>
+        <li>No revert when a sender had <strong>insufficient balance</strong></li>
+        <li>No check to prevent transfers to the <strong>zero address</strong></li>
+      </ul>
+
+      <p>
+        These are standard validations in production-grade ERC20 tokens. Ignoring them can lead to
+        critical issues like silent token loss or blackholes. So I decided to contribute a fix.
+      </p>
+
+      <h2>✅ My Contribution</h2>
+      <p>I introduced two <strong>custom errors</strong> to address this:</p>
+      <pre><code>error InsufficientBalance();
+error TransferToZeroAddress();
+
+function transfer(address to, uint256 amount) public returns (bool) {
+    if (balanceOf[msg.sender] < amount) revert InsufficientBalance();
+    if (to == address(0)) revert TransferToZeroAddress();
+
+    unchecked {
+        balanceOf[msg.sender] -= amount;
+        balanceOf[to] += amount;
+    }
+
+    emit Transfer(msg.sender, to, amount);
+    return true;
+}
+</code></pre>
+
+      <p>
+        These changes enforce the correct behavior while staying consistent with Solmate’s philosophy
+        of gas-optimized, minimalist contracts.
+      </p>
+
+      <h2>🧪 Testing & PR Process</h2>
+      <p>Before submitting the pull request, I:</p>
+      <ul>
+        <li>✔️ Ran <code>forge test</code> – All relevant tests passed for <code>transfer()</code>.</li>
+        <li>✔️ Ran <code>npm run lint</code> – Code style conformed to the project’s standard.</li>
+        <li>⚠️ Ran <code>forge snapshot</code> – Some unrelated legacy test failures were present.</li>
+      </ul>
+      <p>
+        Both <code>forge test</code> and <code>snapshot</code> showed failing <code>testFail*</code> tests that were deprecated and
+        untouched by my changes. I clarified this in the pull request description to maintain full
+        transparency.
+      </p>
+      <p>📌 Pull Request: <a href="https://github.com/transmissions11/solmate/pull/431" target="_blank">#431 – Fix: Missing revert checks in ERC20.transfer</a></p>
+
+      <h2>📖 What I Learned</h2>
+      <ul>
+        <li>How to audit real production smart contracts.</li>
+        <li>How small missing checks can lead to serious vulnerabilities.</li>
+        <li>How to use <code>custom errors</code> for gas-efficient reverts.</li>
+        <li>How to fork, test, and submit a secure open-source PR.</li>
+      </ul>
+
+      <h2>🚀 What’s Next?</h2>
+      <p>
+        This contribution marks my first step toward becoming a smart contract security auditor. I plan
+        to:
+      </p>
+      <ul>
+        <li>Write more blog posts covering vulnerabilities and PoCs.</li>
+        <li>Contribute to top DeFi protocols like Uniswap and Aave.</li>
+        <li>Start submitting full audit reports and hunting real bugs.</li>
+      </ul>
+
+      <p>
+        If you’re hiring, collaborating, or just want to connect, feel free to
+        <a href="/contact.html">reach out here</a>!
+      </p>
+    </article>
+  </div>
+</body>
+</html>
