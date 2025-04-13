@@ -2,87 +2,125 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Solmate ERC20 Fix | Blog | Aayush</title>
-  <link rel="stylesheet" href="/css/style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Solmate ERC20 Fix | Aayush</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f9f9f9;
-      line-height: 1.7;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f2f4f8;
       color: #333;
-      padding: 20px;
+      line-height: 1.75;
     }
+
     .container {
-      max-width: 850px;
-      margin: 0 auto;
-      background: white;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 40px;
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
     }
-    article h1 {
-      font-size: 2rem;
+
+    h1 {
+      font-size: 2.2rem;
+      color: #111827;
       margin-bottom: 0.5rem;
-      color: #111;
     }
-    article h2 {
+
+    h2 {
+      font-size: 1.4rem;
+      color: #0f172a;
       margin-top: 2rem;
-      color: #0b3d91;
-      font-size: 1.3rem;
+      margin-bottom: 1rem;
     }
+
+    p {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+
     ul {
-      padding-left: 1.5rem;
+      margin-left: 1.5rem;
+      margin-bottom: 1.5rem;
     }
+
+    li {
+      margin-bottom: 0.75rem;
+    }
+
     pre {
       background: #1e1e1e;
-      color: #eee;
+      color: #f8f8f2;
       padding: 1rem;
-      border-radius: 8px;
+      border-radius: 10px;
       overflow-x: auto;
+      margin-bottom: 2rem;
     }
+
+    code {
+      font-family: 'Fira Code', monospace;
+      background: #f1f5f9;
+      padding: 0.2em 0.4em;
+      border-radius: 4px;
+    }
+
     a {
-      color: #0077cc;
+      color: #0ea5e9;
+      text-decoration: none;
     }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
     .highlight {
-      background: #fff3cd;
-      border-left: 5px solid #ffc107;
-      padding: 10px 15px;
-      margin: 1rem 0;
-      border-radius: 6px;
+      background: #fef9c3;
+      border-left: 6px solid #facc15;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 1.5rem;
+    }
+
+    .footer {
+      margin-top: 3rem;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #666;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <article>
-      <h1>🛠 Fixing a Critical Miss in Solmate's ERC20 Implementation</h1>
+    <h1>🛠 Fixing a Critical Miss in Solmate's ERC20 Transfer</h1>
 
-      <p>
-        This was my first open-source contribution as a smart contract security auditor — and it started
-        with spotting two dangerously missing revert checks in Solmate's <code>ERC20.transfer()</code> function.
-      </p>
+    <p>
+      This was my first open-source contribution as a smart contract auditor. I spotted two dangerous missing checks in Solmate's <code>ERC20.transfer()</code> implementation — a project widely used in the DeFi space.
+    </p>
 
-      <div class="highlight">
-        <strong>⛔️ Issues Identified:</strong>
-        <ul>
-          <li>Transfer to <code>address(0)</code> did not revert</li>
-          <li>No revert for insufficient balance</li>
-        </ul>
-      </div>
+    <div class="highlight">
+      <strong>⛔️ Issues Identified:</strong>
+      <ul>
+        <li>No revert on <code>transfer(address(0))</code></li>
+        <li>No revert when balance is insufficient</li>
+      </ul>
+    </div>
 
-      <h2>🔍 The Vulnerability</h2>
-      <p>
-        Without these checks, tokens could be silently lost or misused. In production systems, this could lead to blackholes, broken integrations, or user funds disappearing.
-      </p>
+    <h2>🔍 Vulnerability Explanation</h2>
+    <p>
+      Solmate favors minimalism and gas-efficiency, but missing these basic checks can cause catastrophic failures in production. Funds could be sent to <code>address(0)</code> and burned, or transferred silently even when users had insufficient balance.
+    </p>
 
-      <h2>✅ My Fix: Secure & Gas-Optimized</h2>
-      <p>I added two custom errors and implemented the following logic:</p>
-      <pre><code>error InsufficientBalance();
+    <h2>✅ Secure, Gas-Efficient Fix</h2>
+    <p>I implemented two custom errors and added conditional checks with <code>revert</code>:</p>
+
+    <pre><code>error InsufficientBalance();
 error TransferToZeroAddress();
 
 function transfer(address to, uint256 amount) public returns (bool) {
-    if (balanceOf[msg.sender] < amount) revert InsufficientBalance();
+    if (balanceOf[msg.sender] &lt; amount) revert InsufficientBalance();
     if (to == address(0)) revert TransferToZeroAddress();
 
     unchecked {
@@ -94,42 +132,44 @@ function transfer(address to, uint256 amount) public returns (bool) {
     return true;
 }</code></pre>
 
-      <p>This approach stays true to Solmate’s gas-optimized philosophy while enforcing critical safety checks.</p>
+    <p>
+      This follows Solmate’s gas-optimized design while securing basic user safety.
+    </p>
 
-      <h2>🧪 Testing & Linting</h2>
-      <ul>
-        <li><strong>Ran</strong> <code>forge test</code> ✅ (errors unrelated to my code)</li>
-        <li><strong>Ran</strong> <code>npm run lint</code> ✅</li>
-        <li><strong>Ran</strong> <code>forge snapshot</code> ✅ (again, same pre-existing issues)</li>
-      </ul>
+    <h2>🧪 Testing & Linting</h2>
+    <ul>
+      <li><strong>forge test:</strong> Passes (other unrelated tests failed)</li>
+      <li><strong>npm run lint:</strong> ✅</li>
+      <li><strong>forge snapshot:</strong> ✅</li>
+    </ul>
 
-      <p>
-        I clarified in the PR that the test failures stemmed from deprecated <code>testFail*</code> tests unrelated to my contribution.
-      </p>
+    <p>
+      I clarified in my PR that the unrelated <code>testFail*</code> errors were already present in the repo before my change.
+    </p>
 
-      <div class="highlight">
-        🔗 <strong>Pull Request:</strong>
-        <a href="https://github.com/transmissions11/solmate/pull/431" target="_blank">#431 - Add revert checks to ERC20.transfer()</a>
-      </div>
+    <div class="highlight">
+      🔗 <strong>Pull Request:</strong> <a href="https://github.com/transmissions11/solmate/pull/431" target="_blank">#431 - Add revert checks to ERC20.transfer()</a>
+    </div>
 
-      <h2>🎓 Key Takeaways</h2>
-      <ul>
-        <li>🧠 Small oversights can have big security consequences.</li>
-        <li>⚡️ Custom errors reduce gas and improve audit clarity.</li>
-        <li>💡 Open source contributions are excellent audit practice.</li>
-        <li>🛠 I now understand the full PR process — from audit to fix to review.</li>
-      </ul>
+    <h2>💡 What I Learned</h2>
+    <ul>
+      <li>Even audited protocols miss critical checks</li>
+      <li>Gas-optimized design must still preserve security guarantees</li>
+      <li>Open-source contributions are a real path into the security space</li>
+    </ul>
 
-      <h2>🚀 What's Next?</h2>
-      <p>I’m leveling up daily — and this is just the beginning. Upcoming goals:</p>
-      <ul>
-        <li>More contributions to major DeFi protocols</li>
-        <li>Start submitting audit reports & PoCs</li>
-        <li>Write deep-dive blogs on advanced vulnerabilities</li>
-      </ul>
+    <h2>🚀 What's Next?</h2>
+    <ul>
+      <li>More deep contributions to battle-tested protocols</li>
+      <li>Publishing audit reports with PoC & PoE</li>
+      <li>Blogging about advanced exploits like delegatecall abuse, proxy pattern flaws, and access control issues</li>
+    </ul>
 
-      <p>Want to connect or work together? <a href="/contact.html">Reach out here</a>.</p>
-    </article>
+    <p>If you're hiring or want to collaborate, <a href="/contact.html">reach out</a>.</p>
+
+    <div class="footer">
+      &copy; 2025 Aayush | Smart Contract Auditor
+    </div>
   </div>
 </body>
 </html>
