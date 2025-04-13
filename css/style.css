@@ -246,4 +246,18 @@ footer {
     margin-bottom: 1.2rem;
     line-height: 1.6;
   }
-  
+  pre {
+    background-color: #f4f4f4; /* Light gray background */
+    padding: 10px; /* Add padding to make the code block look more spacious */
+    border-radius: 5px; /* Rounded corners */
+    font-family: 'Courier New', monospace; /* Monospace font for better readability */
+    white-space: pre-wrap; /* Ensure long lines wrap properly */
+    word-wrap: break-word; /* Ensure that long words break properly */
+    overflow-x: auto; /* Enable horizontal scrolling if code is too wide */
+}
+
+code {
+    font-size: 1rem; /* Ensure code is readable */
+    color: #333; /* Make sure text is a good color contrast */
+}
+
