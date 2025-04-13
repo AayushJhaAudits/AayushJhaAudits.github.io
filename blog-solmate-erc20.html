@@ -5,28 +5,79 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Solmate ERC20 Fix | Blog | Aayush</title>
   <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f9f9f9;
+      line-height: 1.7;
+      color: #333;
+      padding: 20px;
+    }
+    .container {
+      max-width: 850px;
+      margin: 0 auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    }
+    article h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      color: #111;
+    }
+    article h2 {
+      margin-top: 2rem;
+      color: #0b3d91;
+      font-size: 1.3rem;
+    }
+    ul {
+      padding-left: 1.5rem;
+    }
+    pre {
+      background: #1e1e1e;
+      color: #eee;
+      padding: 1rem;
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+    a {
+      color: #0077cc;
+    }
+    .highlight {
+      background: #fff3cd;
+      border-left: 5px solid #ffc107;
+      padding: 10px 15px;
+      margin: 1rem 0;
+      border-radius: 6px;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
     <article>
-      <h1>🛠 Fixing Missing Revert Checks in Solmate’s ERC20 Transfer Function</h1>
+      <h1>🛠 Fixing a Critical Miss in Solmate's ERC20 Implementation</h1>
 
       <p>
-        While studying and auditing Solmate’s ERC20 implementation, I identified that the
-        <code>transfer()</code> function lacked two important safety checks:
+        This was my first open-source contribution as a smart contract security auditor — and it started
+        with spotting two dangerously missing revert checks in Solmate's <code>ERC20.transfer()</code> function.
       </p>
-      <ul>
-        <li>No revert when a sender had <strong>insufficient balance</strong></li>
-        <li>No check to prevent transfers to the <strong>zero address</strong></li>
-      </ul>
 
+      <div class="highlight">
+        <strong>⛔️ Issues Identified:</strong>
+        <ul>
+          <li>Transfer to <code>address(0)</code> did not revert</li>
+          <li>No revert for insufficient balance</li>
+        </ul>
+      </div>
+
+      <h2>🔍 The Vulnerability</h2>
       <p>
-        These are standard validations in production-grade ERC20 tokens. Ignoring them can lead to
-        critical issues like silent token loss or blackholes. So I decided to contribute a fix.
+        Without these checks, tokens could be silently lost or misused. In production systems, this could lead to blackholes, broken integrations, or user funds disappearing.
       </p>
 
-      <h2>✅ My Contribution</h2>
-      <p>I introduced two <strong>custom errors</strong> to address this:</p>
+      <h2>✅ My Fix: Secure & Gas-Optimized</h2>
+      <p>I added two custom errors and implemented the following logic:</p>
       <pre><code>error InsufficientBalance();
 error TransferToZeroAddress();
 
@@ -41,51 +92,43 @@ function transfer(address to, uint256 amount) public returns (bool) {
 
     emit Transfer(msg.sender, to, amount);
     return true;
-}
-</code></pre>
+}</code></pre>
 
-      <p>
-        These changes enforce the correct behavior while staying consistent with Solmate’s philosophy
-        of gas-optimized, minimalist contracts.
-      </p>
+      <p>This approach stays true to Solmate’s gas-optimized philosophy while enforcing critical safety checks.</p>
 
-      <h2>🧪 Testing & PR Process</h2>
-      <p>Before submitting the pull request, I:</p>
+      <h2>🧪 Testing & Linting</h2>
       <ul>
-        <li>✔️ Ran <code>forge test</code> – All relevant tests passed for <code>transfer()</code>.</li>
-        <li>✔️ Ran <code>npm run lint</code> – Code style conformed to the project’s standard.</li>
-        <li>⚠️ Ran <code>forge snapshot</code> – Some unrelated legacy test failures were present.</li>
-      </ul>
-      <p>
-        Both <code>forge test</code> and <code>snapshot</code> showed failing <code>testFail*</code> tests that were deprecated and
-        untouched by my changes. I clarified this in the pull request description to maintain full
-        transparency.
-      </p>
-      <p>📌 Pull Request: <a href="https://github.com/transmissions11/solmate/pull/431" target="_blank">#431 – Fix: Missing revert checks in ERC20.transfer</a></p>
-
-      <h2>📖 What I Learned</h2>
-      <ul>
-        <li>How to audit real production smart contracts.</li>
-        <li>How small missing checks can lead to serious vulnerabilities.</li>
-        <li>How to use <code>custom errors</code> for gas-efficient reverts.</li>
-        <li>How to fork, test, and submit a secure open-source PR.</li>
-      </ul>
-
-      <h2>🚀 What’s Next?</h2>
-      <p>
-        This contribution marks my first step toward becoming a smart contract security auditor. I plan
-        to:
-      </p>
-      <ul>
-        <li>Write more blog posts covering vulnerabilities and PoCs.</li>
-        <li>Contribute to top DeFi protocols like Uniswap and Aave.</li>
-        <li>Start submitting full audit reports and hunting real bugs.</li>
+        <li><strong>Ran</strong> <code>forge test</code> ✅ (errors unrelated to my code)</li>
+        <li><strong>Ran</strong> <code>npm run lint</code> ✅</li>
+        <li><strong>Ran</strong> <code>forge snapshot</code> ✅ (again, same pre-existing issues)</li>
       </ul>
 
       <p>
-        If you’re hiring, collaborating, or just want to connect, feel free to
-        <a href="/contact.html">reach out here</a>!
+        I clarified in the PR that the test failures stemmed from deprecated <code>testFail*</code> tests unrelated to my contribution.
       </p>
+
+      <div class="highlight">
+        🔗 <strong>Pull Request:</strong>
+        <a href="https://github.com/transmissions11/solmate/pull/431" target="_blank">#431 - Add revert checks to ERC20.transfer()</a>
+      </div>
+
+      <h2>🎓 Key Takeaways</h2>
+      <ul>
+        <li>🧠 Small oversights can have big security consequences.</li>
+        <li>⚡️ Custom errors reduce gas and improve audit clarity.</li>
+        <li>💡 Open source contributions are excellent audit practice.</li>
+        <li>🛠 I now understand the full PR process — from audit to fix to review.</li>
+      </ul>
+
+      <h2>🚀 What's Next?</h2>
+      <p>I’m leveling up daily — and this is just the beginning. Upcoming goals:</p>
+      <ul>
+        <li>More contributions to major DeFi protocols</li>
+        <li>Start submitting audit reports & PoCs</li>
+        <li>Write deep-dive blogs on advanced vulnerabilities</li>
+      </ul>
+
+      <p>Want to connect or work together? <a href="/contact.html">Reach out here</a>.</p>
     </article>
   </div>
 </body>
