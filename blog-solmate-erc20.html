@@ -2,71 +2,125 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Blog | Aayush</title>
-  <link rel="stylesheet" href="/css/style.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Solmate ERC20 Fix | Aayush</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f2f4f8;
+      color: #333;
+      line-height: 1.75;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 40px;
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      color: #111827;
+      margin-bottom: 0.5rem;
+    }
+
+    h2 {
+      font-size: 1.4rem;
+      color: #0f172a;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    p {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    ul {
+      margin-left: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    li {
+      margin-bottom: 0.75rem;
+    }
+
+    pre {
+      background: #1e1e1e;
+      color: #f8f8f2;
+      padding: 1rem;
+      border-radius: 10px;
+      overflow-x: auto;
+      margin-bottom: 2rem;
+    }
+
+    code {
+      font-family: 'Fira Code', monospace;
+      background: #f1f5f9;
+      padding: 0.2em 0.4em;
+      border-radius: 4px;
+    }
+
+    a {
+      color: #0ea5e9;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .highlight {
+      background: #fef9c3;
+      border-left: 6px solid #facc15;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 1.5rem;
+    }
+
+    .footer {
+      margin-top: 3rem;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #666;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
-    <header>
-      <h1>Read My Blog</h1>
-      <p class="tagline">Insights, vulnerabilities, strategies & reflections from my journey as a smart contract auditor.</p>
-    </header>
+    <h1>🛠 Fixing a Critical Miss in Solmate's ERC20 Transfer</h1>
 
-    <section class="blog-list">
-      <div class="blog-card">
-        <h3>🚨 Understanding Reentrancy</h3>
-        <p>
-          A practical breakdown of how reentrancy exploits happen, with live code examples, mitigation techniques, and real-world hack analysis.
-        </p>
-        <a href="#" class="btn btn-primary">📖 Read Article</a>
-      </div>
+    <p>
+      This was my first open-source contribution as a smart contract auditor. I spotted two dangerous missing checks in Solmate's <code>ERC20.transfer()</code> implementation — a project widely used in the DeFi space.
+    </p>
 
-      <div class="blog-card">
-        <h3>🔥 Gas Optimization Techniques</h3>
-        <p>
-          From packing storage to avoiding redundant state changes — learn how to write gas-efficient smart contracts that save cost and improve performance.
-        </p>
-        <a href="#" class="btn btn-primary">📖 Read Article</a>
-      </div>
-
-      <div class="blog-card">
-        <h3>🧠 How I Analyze Vulnerable Contracts</h3>
-        <p>
-          My step-by-step thought process when reading real-world contracts to uncover hidden bugs, even when they're not obvious.
-        </p>
-        <a href="#" class="btn btn-primary">📖 Read Article</a>
-      </div>
-
-      <div class="blog-card">
-        <h3>✍️ More coming soon...</h3>
-        <p>
-          New blogs are written alongside my learning and audits. Stay tuned for deep dives into delegatecall, access control issues, and more.
-        </p>
-        <a href="#" class="btn btn-secondary" disabled>🕒 In Progress</a>
-      </div>
-    </section>
-
-    <section class="blog-entry">
-      <h2>🚨 Contributing to Solmate: Adding Missing Revert Checks to ERC20 Transfer</h2>
-      <p>In my journey of auditing smart contracts, I recently contributed to the Solmate library. I added essential checks for handling errors in the ERC20 transfer function. Specifically, I implemented:</p>
-      
-      <h3>Key Updates:</h3>
+    <div class="highlight">
+      <strong>⛔️ Issues Identified:</strong>
       <ul>
-        <li><strong>Insufficient Balance Error:</strong> I added a revert error when a user tries to transfer more than their balance. This ensures that the transfer only happens if the sender has enough tokens.</li>
-        <li><strong>Transfer to Zero Address Error:</strong> A revert error is added to prevent transfers to the zero address, which would otherwise result in tokens being lost permanently.</li>
-        <li><strong>Gas Optimization:</strong> I used custom errors instead of strings to reduce gas costs and make the contract more efficient.</li>
+        <li>No revert on <code>transfer(address(0))</code></li>
+        <li>No revert when balance is insufficient</li>
       </ul>
+    </div>
 
-      <h3>Here’s how I implemented it:</h3>
+    <h2>🔍 Vulnerability Explanation</h2>
+    <p>
+      Solmate favors minimalism and gas-efficiency, but missing these basic checks can cause catastrophic failures in production. Funds could be sent to <code>address(0)</code> and burned, or transferred silently even when users had insufficient balance.
+    </p>
 
-      <pre><code>
-error InsufficientBalance();
+    <h2>✅ Secure, Gas-Efficient Fix</h2>
+    <p>I implemented two custom errors and added conditional checks with <code>revert</code>:</p>
+
+    <pre><code>error InsufficientBalance();
 error TransferToZeroAddress();
 
 function transfer(address to, uint256 amount) public returns (bool) {
-    if (balanceOf[msg.sender] < amount) revert InsufficientBalance();
+    if (balanceOf[msg.sender] &lt; amount) revert InsufficientBalance();
     if (to == address(0)) revert TransferToZeroAddress();
 
     unchecked {
@@ -76,17 +130,46 @@ function transfer(address to, uint256 amount) public returns (bool) {
 
     emit Transfer(msg.sender, to, amount);
     return true;
-}
-      </code></pre>
+}</code></pre>
 
-      <p>The code above ensures that the transfer function is safe, and gas-efficient. It also makes it much harder for vulnerabilities to be exploited.</p>
-      
-      <p>If you're interested in the full pull request, check it out on GitHub! <a href="https://github.com/transmissions11/solmate/pull/431">Solmate PR Link</a></p>
-    </section>
+    <p>
+      This follows Solmate’s gas-optimized design while securing basic user safety.
+    </p>
 
-    <footer>
+    <h2>🧪 Testing & Linting</h2>
+    <ul>
+      <li><strong>forge test:</strong> Passes (other unrelated tests failed)</li>
+      <li><strong>npm run lint:</strong> ✅</li>
+      <li><strong>forge snapshot:</strong> ✅</li>
+    </ul>
+
+    <p>
+      I clarified in my PR that the unrelated <code>testFail*</code> errors were already present in the repo before my change.
+    </p>
+
+    <div class="highlight">
+      🔗 <strong>Pull Request:</strong> <a href="https://github.com/transmissions11/solmate/pull/431" target="_blank">#431 - Add revert checks to ERC20.transfer()</a>
+    </div>
+
+    <h2>💡 What I Learned</h2>
+    <ul>
+      <li>Even audited protocols miss critical checks</li>
+      <li>Gas-optimized design must still preserve security guarantees</li>
+      <li>Open-source contributions are a real path into the security space</li>
+    </ul>
+
+    <h2>🚀 What's Next?</h2>
+    <ul>
+      <li>More deep contributions to battle-tested protocols</li>
+      <li>Publishing audit reports with PoC & PoE</li>
+      <li>Blogging about advanced exploits like delegatecall abuse, proxy pattern flaws, and access control issues</li>
+    </ul>
+
+    <p>If you're hiring or want to collaborate, <a href="/contact.html">reach out</a>.</p>
+
+    <div class="footer">
       &copy; 2025 Aayush | Smart Contract Auditor
-    </footer>
+    </div>
   </div>
 </body>
 </html>
